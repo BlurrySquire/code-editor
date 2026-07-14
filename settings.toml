@@ -1,0 +1,14 @@
+[editor]
+word_wrap = true
+
+[editor.font]
+family = "Consolas"
+size = 15
+
+[editor.indent]
+use_tabs = false
+width = 4
+show_guides = true
+
+[files]
+show_hidden = false

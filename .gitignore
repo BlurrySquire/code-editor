@@ -1,0 +1,8 @@
+# clangd
+.cache
+.clangd
+compile_commands.json
+
+build
+test.txt
+code-editor
