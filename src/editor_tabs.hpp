@@ -8,7 +8,12 @@
 
 class EditorTabs : public wxAuiNotebook {
 private:
+    wxBitmap modified_icon;
+
     void OnTabClose(wxAuiNotebookEvent& event);
+
+    void OnTabModified(wxStyledTextEvent& event);
+    void OnTabSaved(wxStyledTextEvent& event);
 
 public:
     EditorTabs(wxWindow* parent, wxWindowID id);
@@ -19,6 +24,9 @@ public:
 
     void SaveCurrentFile();
     void SaveCurrentFileAs();
+
+    void CloseCurrentTab();
+    bool CloseAllTabs();
 };
 
 #endif

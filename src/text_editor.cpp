@@ -76,7 +76,7 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
         for (int i = 0; i < sizeof(closing); i++) {
             char current_char = (current_pos < this->GetTextLength()) ? this->GetCharAt(current_pos) : '\0';
 
-            if (character == closing[i] && this->GetCharAt(current_pos) == character) {
+            if (character == closing[i] && current_char == character) {
                 this->DeleteRange(current_pos - 1, 1);
                 this->CharRight();
                 break;

@@ -60,9 +60,11 @@ public:
         Bind(wxEVT_MENU, &MainFrame::OnOpenFolder, this, ID_FILEMENU_OPEN_FOLDER);
         Bind(wxEVT_MENU, &MainFrame::OnSave, this, wxID_SAVE);
         Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
-        Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
+        Bind(wxEVT_MENU, &MainFrame::OnExitBtn, this, wxID_EXIT);
 
         Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
+
+        Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
     }
 
 private:
@@ -104,13 +106,21 @@ private:
         this->editor_tabs->SaveCurrentFileAs();
     }
 
-    void OnExit(wxCommandEvent& event) {
-        // TODO: Check with EditorTabs if there are any unsaved files.
-        Close(true);
+    void OnExitBtn(wxCommandEvent& event) {
+        Close();
     }
     
     void OnAbout(wxCommandEvent& event) {
         wxMessageBox("Made with wxWidgets.", "About Code Editor", wxOK | wxICON_INFORMATION);
+    }
+
+    void OnClose(wxCloseEvent& event) {
+        if (this->editor_tabs->CloseAllTabs()) {
+            this->Destroy();
+        }
+        else {
+            event.Veto();
+        }
     }
 };
 
