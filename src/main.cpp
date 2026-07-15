@@ -147,6 +147,8 @@ public:
     bool OnInit() override {
         if (!wxApp::OnInit()) return false;
 
+        wxImage::AddHandler(new wxPNGHandler);
+
         settings::load();
 
         MainFrame* frame = new MainFrame(this->startup_path);
