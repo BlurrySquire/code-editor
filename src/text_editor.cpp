@@ -95,10 +95,12 @@ void TextEditor::OnKeyDown(wxKeyEvent& event) {
         char left_char = this->GetCharAt(current_pos -1);
         char right_char = this->GetCharAt(current_pos);
 
-        for (int i = 0; i < sizeof(opening); i++) {
-            if (left_char == opening[i] && right_char == closing[i]) {
-                this->DeleteRange(current_pos, 1);
-                break;
+        if (current_pos > 0 && current_pos < this->GetTextLength()) {
+            for (int i = 0; i < sizeof(opening); i++) {
+                if (left_char == opening[i] && right_char == closing[i]) {
+                    this->DeleteRange(current_pos, 1);
+                    break;
+                }
             }
         }
     }
