@@ -63,7 +63,9 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
     bool just_opened = false;
 
     for (int i = 0; i < sizeof(opening); i++) {
-        if (character == opening[i] && this->GetCharAt(current_pos) != closing[i]) {
+        char current_char = (current_pos < this->GetTextLength()) ? this->GetCharAt(current_pos) : '\0';
+        
+        if (character == opening[i] && current_char != closing[i]) {
             this->InsertText(current_pos, closing[i]);
             just_opened = true;
             break;
@@ -72,6 +74,8 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
 
     if (!just_opened) {
         for (int i = 0; i < sizeof(closing); i++) {
+            char current_char = (current_pos < this->GetTextLength()) ? this->GetCharAt(current_pos) : '\0';
+
             if (character == closing[i] && this->GetCharAt(current_pos) == character) {
                 this->DeleteRange(current_pos - 1, 1);
                 this->CharRight();
