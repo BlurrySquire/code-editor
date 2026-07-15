@@ -11,8 +11,11 @@
 EditorTabs::EditorTabs(wxWindow* parent, wxWindowID id)
     : wxAuiNotebook(parent, id, wxDefaultPosition, wxDefaultSize, AUI_NB_STYLE)
 {
-    // this->modified_icon = wxBitmap("resources/modified-icon.png");
-    this->modified_icon = wxBITMAP_PNG(modified-icon);
+    #ifdef __WXMSW__
+        this->modified_icon = wxBITMAP_PNG(modified-icon);
+    #else
+        this->modified_icon = wxBitmap("resources/modified-icon.png");
+    #endif
 
     Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &EditorTabs::OnTabClose, this);
 
