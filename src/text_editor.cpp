@@ -10,7 +10,12 @@ TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
     this->SetWrapMode(settings::get()["editor"]["word_wrap"].as_boolean() ? wxSTC_WRAP_WORD : wxSTC_WRAP_NONE);
     this->SetWrapVisualFlags(wxSTC_WRAPVISUALFLAG_END);
 
-    wxFont code_font(11, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    wxFont code_font(
+        settings::get()["editor"]["font"]["size"].value_or(11),
+        wxFONTFAMILY_TELETYPE,
+        wxFONTSTYLE_NORMAL,
+        wxFONTWEIGHT_NORMAL
+    );
     code_font.SetFaceName(settings::get()["editor"]["font"]["family"].value_or(""));
 
     this->StyleSetFont(wxSTC_STYLE_DEFAULT, code_font);
