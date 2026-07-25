@@ -6,6 +6,11 @@ CPP_FLAGS := -std=c++20 -O2 $(shell wx-config --cxxflags)
 LD_FLAGS :=
 
 INCLUDES := -Isrc
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+	INCLUDES += -I/opt/homebrew/opt/tomlplusplus/include
+endif
 LIBS := $(shell wx-config --libs stc,aui,core,base)
 
 TARGET := code-editor

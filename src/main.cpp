@@ -50,7 +50,7 @@ public:
         }
 
         this->editor_tabs = new EditorTabs(this->splitter, wxID_ANY);
-        
+
         this->splitter->SplitVertically(this->file_view, this->editor_tabs, 200);
         this->splitter->SetMinimumPaneSize(50);
 
@@ -86,7 +86,7 @@ private:
         wxFileDialog open_dialog(this, "Open File", "", "", "All Files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
         if (open_dialog.ShowModal() == wxID_CANCEL) return;
-        
+
         this->editor_tabs->OpenFile(open_dialog.GetPath());
     }
 
@@ -109,7 +109,7 @@ private:
     void OnExitBtn(wxCommandEvent& event) {
         Close();
     }
-    
+
     void OnAbout(wxCommandEvent& event) {
         wxMessageBox("Made with wxWidgets.", "About Code Editor", wxOK | wxICON_INFORMATION);
     }
@@ -153,7 +153,7 @@ public:
 
         MainFrame* frame = new MainFrame(this->startup_path);
         frame->Show();
-        
+
         return true;
     }
 };

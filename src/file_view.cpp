@@ -34,7 +34,7 @@ void FileView::AddFolderItems(const wxTreeItemId& parent_id, const wxString& pat
     }
 
     wxString filename;
-    
+
     bool cont = dir.GetFirst(&filename, wxEmptyString, wxDIR_DIRS);
     while (cont) {
         wxTreeItemId item = AppendItem(parent_id, filename, 0);

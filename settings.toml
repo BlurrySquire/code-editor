@@ -3,7 +3,7 @@ word_wrap = true
 
 [editor.font]
 family = "Consolas"
-size = 15
+size = 25
 
 [editor.indent]
 use_tabs = false

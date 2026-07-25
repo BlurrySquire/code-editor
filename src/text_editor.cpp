@@ -64,7 +64,7 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
 
     for (int i = 0; i < sizeof(opening); i++) {
         char current_char = (current_pos < this->GetTextLength()) ? this->GetCharAt(current_pos) : '\0';
-        
+
         if (character == opening[i] && current_char != closing[i]) {
             this->InsertText(current_pos, closing[i]);
             just_opened = true;
@@ -132,7 +132,7 @@ void TextEditor::UpdateLineNumberMargin(int line_count) {
 
 void TextEditor::HandleNewLines(int current_line, int current_pos) {
     char add_indent_chars[] = { '{', '[', '(' };
-    
+
     if (current_line > 0) {
         int previous_line_indent = this->GetLineIndentation(current_line - 1);
         int indent_size = this->GetIndent();

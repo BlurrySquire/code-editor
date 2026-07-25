@@ -29,7 +29,7 @@ EditorTabs::~EditorTabs() {
 
 void EditorTabs::OnTabClose(wxAuiNotebookEvent& event) {
     int index = event.GetSelection();
-    
+
     if (index != wxNOT_FOUND) {
         wxWindow* window = this->GetPage(index);
         TextEditor* editor = static_cast<TextEditor*>(window);
@@ -38,9 +38,9 @@ void EditorTabs::OnTabClose(wxAuiNotebookEvent& event) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
             dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 event.Veto();
                 return;
@@ -115,9 +115,9 @@ void EditorTabs::CloseCurrentTab() {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
             dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 return;
             }
@@ -139,9 +139,9 @@ bool EditorTabs::CloseAllTabs() {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(i), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
             dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 return false;
             }
