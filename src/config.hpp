@@ -1,0 +1,32 @@
+#ifndef CONFIG_FILE
+#define CONFIG_FILE 1
+
+#define FILE "file"
+#define FOLDER "folder"
+
+#define NEWFILE "New File"
+#define NEWFOLDER "New Folder"
+#define DELETEFILE "Delete File"
+#define DELETEFOLDER "Delete Folder"
+
+#define DIALOG_CONFIRM_DELETION "do you really want to delete this"
+#define DIALOG_DELETE_TEXT "Delete"
+#define DIALOG_INPUT_NEWFOLDER "input folder name:"
+#define DIALOG_INPUT_NEWFILE "input file name:"
+
+// yes/no label
+#define YN_LABEL_DELETE "Delete"
+#define YN_LABEL_CONFIRM "OK"
+#define YN_LABEL_CANCEL "Cancel"
+#define YN_LABEL_SAVE "Save"
+#define YN_LABEL_NOTSAVE "Don't Save"
+
+
+// error/warnings
+#define FAILEDTO_CREATEFILE "failed to create this file"
+#define FAILEDTO_CREATEFOLDER "failed to create this folder"
+#define FAILEDTO_OPENFILE "Failed to open file!"
+#define FAILEDTO_OPENFOLDER "Failed to open folder!"
+#define FAILEDTO_ALREADYEXISTS "something has the same name already"
+
+#endif

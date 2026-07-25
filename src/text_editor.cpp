@@ -4,6 +4,10 @@
 
 #include "settings.hpp"
 
+//TODO:
+// when a file is updated from a different program, the content
+// needs to be updated in this editorwindow too
+
 TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
     : wxStyledTextCtrl(parent, id)
 {
@@ -68,8 +72,8 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
         this->HandleNewLines(current_line, current_pos);
     }
 
-    static char opening[] = { '{', '[', '(', '"', '\'' };
-    static char closing[] = { '}', ']', ')', '"', '\'' };
+    static char opening[] = { '{', '[', '(', '"', '\'', '<'};
+    static char closing[] = { '}', ']', ')', '"', '\'', '>'};
 
     bool just_opened = false;
 
@@ -98,8 +102,8 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
 
 void TextEditor::OnKeyDown(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_BACK) {
-        static char opening[] = { '{', '[', '(', '"', '\'' };
-        static char closing[] = { '}', ']', ')', '"', '\'' };
+        static char opening[] = { '{', '[', '(', '"', '\'', '<'};
+        static char closing[] = { '}', ']', ')', '"', '\'', '>'};
 
         int current_pos = this->GetCurrentPos();
 

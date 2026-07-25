@@ -23,6 +23,11 @@ public:
     bool LoadFile(const wxString& filename);
     void Save();
     void SaveAs();
+
+    wxString GetFilePath() const
+    {
+        return this->file_path;
+    }
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "editor_tabs.hpp"
-
+#include "config.hpp"
 #include "text_editor.hpp"
 
 #include <wx/artprov.h>
@@ -39,7 +39,7 @@ void EditorTabs::OnTabClose(wxAuiNotebookEvent& event) {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
 
             int response = dialog.ShowModal();
 
@@ -82,10 +82,24 @@ void EditorTabs::NewFile() {
 }
 
 void EditorTabs::OpenFile(const wxFileName& filename) {
-    TextEditor* text_editor = new TextEditor(this, wxID_ANY);
-    text_editor->LoadFile(filename.GetAbsolutePath());
+    wxString target_path = filename.GetAbsolutePath();
 
+    for (size_t i = 0; i < this->GetPageCount(); i++) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath() == target_path) {
+            this->SetSelection(i);
+            return;
+        }
+    }
+
+    TextEditor* text_editor = new TextEditor(this, wxID_ANY);
+
+    text_editor->LoadFile(target_path);
+
+    size_t new_index = this->GetPageCount();
     this->AddPage(text_editor, filename.GetFullName());
+    this->SetSelection(new_index);
 }
 
 void EditorTabs::SaveCurrentFile() {
@@ -116,7 +130,7 @@ void EditorTabs::CloseCurrentTab() {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
 
             int response = dialog.ShowModal();
 
@@ -140,7 +154,7 @@ bool EditorTabs::CloseAllTabs() {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(i), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
 
             int response = dialog.ShowModal();
 
@@ -156,4 +170,27 @@ bool EditorTabs::CloseAllTabs() {
     }
 
     return true;
+}
+
+void EditorTabs::CloseTabByPath(const wxString& path) {
+    for (size_t i = 0; i < this->GetPageCount(); i++) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath() == path) {
+            this->DeletePage(i);
+            break;
+        }
+    }
+}
+
+void EditorTabs::CloseTabsInFolder(const wxString& folder_path) {
+    wxString prefix = folder_path + wxFileName::GetPathSeparator();
+
+    for (int i = (int)this->GetPageCount() - 1; i >= 0; i--) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath().StartsWith(prefix)) {
+            this->DeletePage(i);
+        }
+    }
 }

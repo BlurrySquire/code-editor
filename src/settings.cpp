@@ -36,7 +36,7 @@ word_wrap = true
 
 [editor.font]
 family = "Menlo"
-size = 15
+size = 12
 
 [editor.indent]
 use_tabs = false

@@ -67,6 +67,8 @@ public:
         Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
 
         this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
+        this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
+        this->file_view->Bind(FILEVIEW_PATH_DELETED, &MainFrame::OnFileViewPathDeleted, this);
     }
 
 private:
@@ -103,6 +105,17 @@ private:
     void OnFileViewActivated(wxCommandEvent& event) {
         wxFileName path(event.GetString());
         this->editor_tabs->OpenFile(path);
+    }
+
+    void OnFileViewPathDeleted(wxCommandEvent& event) {
+        bool is_directory = event.GetInt() == 1;
+
+        if (is_directory) {
+            this->editor_tabs->CloseTabsInFolder(event.GetString());
+        } else
+        {
+            this->editor_tabs->CloseTabByPath(event.GetString());
+        }
     }
 
     void OnSave(wxCommandEvent& event) {
