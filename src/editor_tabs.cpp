@@ -3,6 +3,7 @@
 #include "text_editor.hpp"
 
 #include <wx/artprov.h>
+#include <wx/image.h>
 
 #define AUI_NB_STYLE \
     wxAUI_NB_DEFAULT_STYLE | \
@@ -14,7 +15,8 @@ EditorTabs::EditorTabs(wxWindow* parent, wxWindowID id)
     #ifdef __WXMSW__
         this->modified_icon = wxBITMAP_PNG(modified-icon);
     #else
-        this->modified_icon = wxBitmap("resources/modified-icon.png");
+        wxImage modified_icon_image("resources/modified-icon.png", wxBITMAP_TYPE_PNG );
+        this->modified_icon = wxBitmap(modified_icon_image);
     #endif
 
     Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &EditorTabs::OnTabClose, this);

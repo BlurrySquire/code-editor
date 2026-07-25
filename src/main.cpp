@@ -65,6 +65,8 @@ public:
         Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 
         Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
+
+        this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
     }
 
 private:
@@ -96,6 +98,11 @@ private:
         if (dir_dialog.ShowModal() == wxID_CANCEL) return;
 
         this->file_view->PopulateTree(dir_dialog.GetPath());
+    }
+
+    void OnFileViewActivated(wxCommandEvent& event) {
+        wxFileName path(event.GetString());
+        this->editor_tabs->OpenFile(path);
     }
 
     void OnSave(wxCommandEvent& event) {

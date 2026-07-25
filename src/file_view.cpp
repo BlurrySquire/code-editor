@@ -12,6 +12,7 @@ FileView::FileView(wxWindow* parent, wxWindowID id)
     this->icon_list->Add(wxArtProvider::GetBitmap(wxART_NORMAL_FILE, wxART_OTHER, wxSize(16, 16)));
 
     this->AssignImageList(this->icon_list);
+    Bind(wxEVT_TREE_ITEM_ACTIVATED, &FileView::OnItemActivated, this, this->GetId());
 }
 
 FileView::~FileView() {
@@ -26,6 +27,8 @@ void FileView::PopulateTree(const wxString& root_path) {
     this->AddFolderItems(root, root_path);
 }
 
+wxDEFINE_EVENT(FILEVIEW_FILE_ACTIVATED, wxCommandEvent);
+
 void FileView::AddFolderItems(const wxTreeItemId& parent_id, const wxString& path) {
     wxDir dir(path);
     if (!dir.IsOpened()) {
@@ -37,16 +40,41 @@ void FileView::AddFolderItems(const wxTreeItemId& parent_id, const wxString& pat
 
     bool cont = dir.GetFirst(&filename, wxEmptyString, wxDIR_DIRS);
     while (cont) {
+        wxString full_path = path + wxFileName::GetPathSeparator() + filename;
         wxTreeItemId item = AppendItem(parent_id, filename, 0);
-        this->AddFolderItems(item, path + wxFileName::GetPathSeparator() + filename);
+        this->SetItemData(item, new FileViewItemData(full_path, true));
+        this->AddFolderItems(item, full_path);
 
         cont = dir.GetNext(&filename);
     }
 
     cont = dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
     while (cont) {
-        this->AppendItem(parent_id, filename, 1);
+        wxString full_path = path + wxFileName::GetPathSeparator() + filename;
+        wxTreeItemId item = this->AppendItem(parent_id, filename, 1);
+        this->SetItemData(item, new FileViewItemData(full_path, false));
 
         cont = dir.GetNext(&filename);
     }
+}
+
+void FileView::OnItemActivated(wxTreeEvent& event) {
+    wxTreeItemId item = event.GetItem();
+    FileViewItemData* data = static_cast<FileViewItemData*> (this->GetItemData(item));
+
+    if (data == nullptr) {
+        event.Skip();
+        return;
+    }
+
+    if (data->is_directory) {
+        this->Toggle(item);
+        return;
+    }
+
+    wxCommandEvent activated_event(FILEVIEW_FILE_ACTIVATED, this->GetId());
+    activated_event.SetEventObject(this);
+    activated_event.SetString(data->full_path);
+
+    this->ProcessWindowEvent(activated_event);
 }

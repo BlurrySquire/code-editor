@@ -1,5 +1,7 @@
 #include "text_editor.hpp"
 
+#include <wx/fontenum.h>
+
 #include "settings.hpp"
 
 TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
@@ -16,7 +18,11 @@ TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
         wxFONTSTYLE_NORMAL,
         wxFONTWEIGHT_NORMAL
     );
-    code_font.SetFaceName(settings::get()["editor"]["font"]["family"].value_or(""));
+
+    wxString configured_face = settings::get()["editor"]["font"]["family"].value_or("");
+    if (!configured_face.empty() && wxFontEnumerator::IsValidFacename(configured_face)) {
+        code_font.SetFaceName(configured_face);
+    }
 
     this->StyleSetFont(wxSTC_STYLE_DEFAULT, code_font);
     this->StyleClearAll();
