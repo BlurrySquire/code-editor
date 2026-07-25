@@ -7,3 +7,6 @@ build
 test.txt
 code-editor
 code-editor.exe
+
+.DS_Store
+**/.DS_Store
