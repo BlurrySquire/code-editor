@@ -10,3 +10,5 @@ code-editor.exe
 
 .DS_Store
 **/.DS_Store
+
+settings.toml
