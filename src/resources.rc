@@ -1,3 +1,5 @@
+aAppIcon ICON "branding/icon.ico"
+
 #include "wx/msw/wx.rc"
 
 modified-icon RCDATA "resources/modified-icon.png"

@@ -13,12 +13,12 @@ ifeq ($(UNAME_S),Darwin)
 endif
 LIBS := $(shell wx-config --libs stc,aui,core,base)
 
-TARGET := code-editor
+TARGET := tea-code
 SOURCES := $(shell find src -name '*.cpp')
 OBJECTS := $(SOURCES:src/%.cpp=build/%.o)
 
 ifeq ($(OS),Windows_NT)
-	TARGET := code-editor.exe
+	TARGET := tea-code.exe
 	RC_SOURCE := src/resources.rc
 	RC_OBJECT := build/resources_rc.o
 

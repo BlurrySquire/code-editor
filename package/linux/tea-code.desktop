@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=TeaCode
+Exec=AppRun
+Icon=icon
+Categories=Development;TextEditor;

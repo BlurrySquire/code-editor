@@ -4,9 +4,9 @@
 compile_commands.json
 
 build
-test.txt
-code-editor
-code-editor.exe
+tea-code
+tea-code.exe
+*.AppImage
 
 .DS_Store
 **/.DS_Store

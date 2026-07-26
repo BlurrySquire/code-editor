@@ -40,7 +40,7 @@ public:
         menu_bar->Append(menu_help, "&Help");
         this->SetMenuBar(menu_bar);
 
-        this->SetTitle("Code Editor");
+        this->SetTitle("Tea Code");
 
         this->splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
 
@@ -131,7 +131,7 @@ private:
     }
 
     void OnAbout(wxCommandEvent& event) {
-        wxMessageBox("Made with wxWidgets.", "About Code Editor", wxOK | wxICON_INFORMATION);
+        wxMessageBox("Made with wxWidgets.", "About Tea Code", wxOK | wxICON_INFORMATION);
     }
 
     void OnClose(wxCloseEvent& event) {
@@ -144,7 +144,7 @@ private:
     }
 };
 
-class CodeEditor : public wxApp {
+class TeaCode : public wxApp {
 private:
     wxString startup_path;
 
@@ -178,4 +178,4 @@ public:
     }
 };
 
-wxIMPLEMENT_APP(CodeEditor);
+wxIMPLEMENT_APP(TeaCode);
