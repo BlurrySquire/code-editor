@@ -1,8 +1,9 @@
 #include "editor_tabs.hpp"
-
+#include "config.hpp"
 #include "text_editor.hpp"
 
 #include <wx/artprov.h>
+#include <wx/image.h>
 
 #define AUI_NB_STYLE \
     wxAUI_NB_DEFAULT_STYLE | \
@@ -14,7 +15,8 @@ EditorTabs::EditorTabs(wxWindow* parent, wxWindowID id)
     #ifdef __WXMSW__
         this->modified_icon = wxBITMAP_PNG(modified-icon);
     #else
-        this->modified_icon = wxBitmap("resources/modified-icon.png");
+        wxImage modified_icon_image("resources/modified-icon.png", wxBITMAP_TYPE_PNG );
+        this->modified_icon = wxBitmap(modified_icon_image);
     #endif
 
     Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &EditorTabs::OnTabClose, this);
@@ -29,7 +31,7 @@ EditorTabs::~EditorTabs() {
 
 void EditorTabs::OnTabClose(wxAuiNotebookEvent& event) {
     int index = event.GetSelection();
-    
+
     if (index != wxNOT_FOUND) {
         wxWindow* window = this->GetPage(index);
         TextEditor* editor = static_cast<TextEditor*>(window);
@@ -37,10 +39,10 @@ void EditorTabs::OnTabClose(wxAuiNotebookEvent& event) {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 event.Veto();
                 return;
@@ -80,10 +82,24 @@ void EditorTabs::NewFile() {
 }
 
 void EditorTabs::OpenFile(const wxFileName& filename) {
-    TextEditor* text_editor = new TextEditor(this, wxID_ANY);
-    text_editor->LoadFile(filename.GetAbsolutePath());
+    wxString target_path = filename.GetAbsolutePath();
 
+    for (size_t i = 0; i < this->GetPageCount(); i++) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath() == target_path) {
+            this->SetSelection(i);
+            return;
+        }
+    }
+
+    TextEditor* text_editor = new TextEditor(this, wxID_ANY);
+
+    text_editor->LoadFile(target_path);
+
+    size_t new_index = this->GetPageCount();
     this->AddPage(text_editor, filename.GetFullName());
+    this->SetSelection(new_index);
 }
 
 void EditorTabs::SaveCurrentFile() {
@@ -114,10 +130,10 @@ void EditorTabs::CloseCurrentTab() {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(index), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 return;
             }
@@ -138,10 +154,10 @@ bool EditorTabs::CloseAllTabs() {
         if (editor->GetModify()) {
             wxMessageDialog dialog(this, "Would you like to save your changes to " + this->GetPageText(i), "Unsaved Changes", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
-            dialog.SetYesNoCancelLabels("Save", "Don't Save", "Cancel");
-            
+            dialog.SetYesNoCancelLabels(YN_LABEL_SAVE, YN_LABEL_NOTSAVE, YN_LABEL_CANCEL);
+
             int response = dialog.ShowModal();
-            
+
             if (response == wxID_CANCEL) {
                 return false;
             }
@@ -154,4 +170,27 @@ bool EditorTabs::CloseAllTabs() {
     }
 
     return true;
+}
+
+void EditorTabs::CloseTabByPath(const wxString& path) {
+    for (size_t i = 0; i < this->GetPageCount(); i++) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath() == path) {
+            this->DeletePage(i);
+            break;
+        }
+    }
+}
+
+void EditorTabs::CloseTabsInFolder(const wxString& folder_path) {
+    wxString prefix = folder_path + wxFileName::GetPathSeparator();
+
+    for (int i = (int)this->GetPageCount() - 1; i >= 0; i--) {
+        TextEditor* editor = static_cast<TextEditor*> (this->GetPage(i));
+
+        if (editor->GetFilePath().StartsWith(prefix)) {
+            this->DeletePage(i);
+        }
+    }
 }

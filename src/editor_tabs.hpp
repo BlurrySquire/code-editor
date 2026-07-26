@@ -27,6 +27,8 @@ public:
 
     void CloseCurrentTab();
     bool CloseAllTabs();
+    void CloseTabByPath(const wxString& path);
+    void CloseTabsInFolder(const wxString& folder_path);
 };
 
 #endif

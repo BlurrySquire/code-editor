@@ -8,7 +8,14 @@ extern std::string_view default_settings;
 
 namespace settings {
     void load() {
-        config = toml::parse_file("settings.toml");
+        try {
+            config = toml::parse_file("settings.toml");
+        }
+        catch (const toml::parse_error&) {
+            load_default();
+            return;
+        }
+
         if (config.empty()) {
             load_default();
         }
@@ -28,8 +35,8 @@ std::string_view default_settings = R"(
 word_wrap = true
 
 [editor.font]
-family = "Consolas"
-size = 15
+family = "Menlo"
+size = 12
 
 [editor.indent]
 use_tabs = false

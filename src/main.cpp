@@ -50,7 +50,7 @@ public:
         }
 
         this->editor_tabs = new EditorTabs(this->splitter, wxID_ANY);
-        
+
         this->splitter->SplitVertically(this->file_view, this->editor_tabs, 200);
         this->splitter->SetMinimumPaneSize(50);
 
@@ -65,6 +65,10 @@ public:
         Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 
         Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
+
+        this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
+        this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
+        this->file_view->Bind(FILEVIEW_PATH_DELETED, &MainFrame::OnFileViewPathDeleted, this);
     }
 
 private:
@@ -86,7 +90,7 @@ private:
         wxFileDialog open_dialog(this, "Open File", "", "", "All Files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
         if (open_dialog.ShowModal() == wxID_CANCEL) return;
-        
+
         this->editor_tabs->OpenFile(open_dialog.GetPath());
     }
 
@@ -96,6 +100,22 @@ private:
         if (dir_dialog.ShowModal() == wxID_CANCEL) return;
 
         this->file_view->PopulateTree(dir_dialog.GetPath());
+    }
+
+    void OnFileViewActivated(wxCommandEvent& event) {
+        wxFileName path(event.GetString());
+        this->editor_tabs->OpenFile(path);
+    }
+
+    void OnFileViewPathDeleted(wxCommandEvent& event) {
+        bool is_directory = event.GetInt() == 1;
+
+        if (is_directory) {
+            this->editor_tabs->CloseTabsInFolder(event.GetString());
+        } else
+        {
+            this->editor_tabs->CloseTabByPath(event.GetString());
+        }
     }
 
     void OnSave(wxCommandEvent& event) {
@@ -109,7 +129,7 @@ private:
     void OnExitBtn(wxCommandEvent& event) {
         Close();
     }
-    
+
     void OnAbout(wxCommandEvent& event) {
         wxMessageBox("Made with wxWidgets.", "About Code Editor", wxOK | wxICON_INFORMATION);
     }
@@ -153,7 +173,7 @@ public:
 
         MainFrame* frame = new MainFrame(this->startup_path);
         frame->Show();
-        
+
         return true;
     }
 };

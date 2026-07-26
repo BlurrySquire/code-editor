@@ -1,6 +1,12 @@
 #include "text_editor.hpp"
 
+#include <wx/fontenum.h>
+
 #include "settings.hpp"
+
+//TODO:
+// when a file is updated from a different program, the content
+// needs to be updated in this editorwindow too
 
 TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
     : wxStyledTextCtrl(parent, id)
@@ -10,8 +16,17 @@ TextEditor::TextEditor(wxWindow* parent, wxWindowID id)
     this->SetWrapMode(settings::get()["editor"]["word_wrap"].as_boolean() ? wxSTC_WRAP_WORD : wxSTC_WRAP_NONE);
     this->SetWrapVisualFlags(wxSTC_WRAPVISUALFLAG_END);
 
-    wxFont code_font(11, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    code_font.SetFaceName(settings::get()["editor"]["font"]["family"].value_or(""));
+    wxFont code_font(
+        settings::get()["editor"]["font"]["size"].value_or(11),
+        wxFONTFAMILY_TELETYPE,
+        wxFONTSTYLE_NORMAL,
+        wxFONTWEIGHT_NORMAL
+    );
+
+    wxString configured_face = settings::get()["editor"]["font"]["family"].value_or("");
+    if (!configured_face.empty() && wxFontEnumerator::IsValidFacename(configured_face)) {
+        code_font.SetFaceName(configured_face);
+    }
 
     this->StyleSetFont(wxSTC_STYLE_DEFAULT, code_font);
     this->StyleClearAll();
@@ -57,14 +72,14 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
         this->HandleNewLines(current_line, current_pos);
     }
 
-    static char opening[] = { '{', '[', '(', '"', '\'' };
-    static char closing[] = { '}', ']', ')', '"', '\'' };
+    static char opening[] = { '{', '[', '(', '"', '\'', '<'};
+    static char closing[] = { '}', ']', ')', '"', '\'', '>'};
 
     bool just_opened = false;
 
     for (int i = 0; i < sizeof(opening); i++) {
         char current_char = (current_pos < this->GetTextLength()) ? this->GetCharAt(current_pos) : '\0';
-        
+
         if (character == opening[i] && current_char != closing[i]) {
             this->InsertText(current_pos, closing[i]);
             just_opened = true;
@@ -87,8 +102,8 @@ void TextEditor::OnCharAdded(wxStyledTextEvent& event) {
 
 void TextEditor::OnKeyDown(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_BACK) {
-        static char opening[] = { '{', '[', '(', '"', '\'' };
-        static char closing[] = { '}', ']', ')', '"', '\'' };
+        static char opening[] = { '{', '[', '(', '"', '\'', '<'};
+        static char closing[] = { '}', ']', ')', '"', '\'', '>'};
 
         int current_pos = this->GetCurrentPos();
 
@@ -132,7 +147,7 @@ void TextEditor::UpdateLineNumberMargin(int line_count) {
 
 void TextEditor::HandleNewLines(int current_line, int current_pos) {
     char add_indent_chars[] = { '{', '[', '(' };
-    
+
     if (current_line > 0) {
         int previous_line_indent = this->GetLineIndentation(current_line - 1);
         int indent_size = this->GetIndent();
