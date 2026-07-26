@@ -69,6 +69,7 @@ public:
         this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
         this->file_view->Bind(FILEVIEW_FILE_ACTIVATED, &MainFrame::OnFileViewActivated, this);
         this->file_view->Bind(FILEVIEW_PATH_DELETED, &MainFrame::OnFileViewPathDeleted, this);
+        this->file_view->Bind(FILEVIEW_PATH_MOVED, &MainFrame::OnFileViewPathMoved, this);
     }
 
 private:
@@ -115,6 +116,16 @@ private:
         } else
         {
             this->editor_tabs->CloseTabByPath(event.GetString());
+        }
+    }
+
+    void OnFileViewPathMoved(wxCommandEvent& event) {
+        wxString old_path = event.GetString();
+        wxString* new_path_ptr = static_cast<wxString*> (event.GetClientData());
+
+        if (new_path_ptr != nullptr) {
+            this->editor_tabs->PathMoved(old_path, *new_path_ptr);
+            delete new_path_ptr;
         }
     }
 

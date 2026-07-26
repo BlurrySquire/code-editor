@@ -15,6 +15,7 @@ public:
 
 wxDECLARE_EVENT(FILEVIEW_FILE_ACTIVATED, wxCommandEvent);
 wxDECLARE_EVENT(FILEVIEW_PATH_DELETED, wxCommandEvent);
+wxDECLARE_EVENT(FILEVIEW_PATH_MOVED, wxCommandEvent);
 
 class FileView : public wxTreeCtrl {
 private:
@@ -23,6 +24,7 @@ private:
     wxString root_path;
     wxTreeItemId context_item;
     wxTimer refresh_timer;
+    wxTreeItemId drag_item;
 
     void AddFolderItems(const wxTreeItemId& parent_id, const wxString& path);
     void OnItemActivated(wxTreeEvent& event);
@@ -31,7 +33,10 @@ private:
     void OnNewFile(wxCommandEvent& event);
     void OnNewFolder(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
+    void OnBeginDrag(wxTreeEvent& event);
+    void OnEndDrag(wxTreeEvent& event);
     wxString GetTargetDirectory();
+    bool IsDescendantPath(const wxString& parent_path, const wxString& candidate_path);
 
     void CollectExpandedPaths(const wxTreeItemId& item, wxArrayString& out);
     void RestoreTreeState(const wxTreeItemId& item, const wxArrayString& expanded_paths, const wxString& selected_path);
