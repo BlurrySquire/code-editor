@@ -202,12 +202,33 @@ void FileView::OnNewFolder(wxCommandEvent& event) {
 }
 
 void FileView::OnDeleteItem(wxCommandEvent& event) {
-    if (!this->context_item.IsOk()) return;
+    wxTreeItemId item = this->GetSelection();
 
-    FileViewItemData* data = static_cast<FileViewItemData*>(this->GetItemData(this->context_item));
-    if (data == nullptr) return;
+    FileViewItemData* data = static_cast<FileViewItemData*>(this->GetItemData(item));
+    if (data == nullptr) {
+        wxMessageBox("Invalid item data.", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
 
-    wxString item_type = data->is_directory ? FOLDER : FILE;
+    wxString path = data->full_path;
+    bool is_directory = data->is_directory;
+
+    if (is_directory) {
+        if (!wxDirExists(path)) {
+            wxMessageBox(FAILEDTO_NOTEXIST_FOLDER "\n\n" + path, "Error", wxOK | wxICON_ERROR);
+            this->RefreshTree();
+            return;
+        }
+    } else {
+        if (!wxFileExists(path)) {
+            wxMessageBox(FAILEDTO_NOTEXIST_FILE "\n\n" + path, "Error", wxOK | wxICON_ERROR);
+            this->RefreshTree();
+            return;
+        }
+    }
+
+    wxString item_type = is_directory ? FOLDER : FILE;
+
 
     wxMessageDialog confirm_dialog(
         this,
@@ -218,10 +239,20 @@ void FileView::OnDeleteItem(wxCommandEvent& event) {
     confirm_dialog.SetYesNoLabels(YN_LABEL_DELETE, YN_LABEL_CANCEL);
 
     if (confirm_dialog.ShowModal() != wxID_YES) return;
+    if (is_directory && !wxDirExists(path)) {
+        wxMessageBox(FAILEDTO_ALREADYDELETED_FOLDER, "Error", wxOK | wxICON_ERROR);
+        this->RefreshTree();
+        return;
+    }
+    if (!is_directory && !wxFileExists(path)) {
+        wxMessageBox(FAILEDTO_ALREADYDELETED_FILE, "Error", wxOK | wxICON_ERROR);
+        this->RefreshTree();
+        return;
+    }
 
-    bool success = data->is_directory
-        ? wxFileName::Rmdir(data->full_path, wxPATH_RMDIR_RECURSIVE)
-        : wxRemoveFile(data->full_path);
+    bool success = is_directory
+        ? wxFileName::Rmdir(path, wxPATH_RMDIR_RECURSIVE)
+        : wxRemoveFile(path);
 
     if (!success) {
         wxMessageBox("Failed to delete the " + item_type + ".", "Error", wxOK | wxICON_ERROR);
@@ -230,8 +261,8 @@ void FileView::OnDeleteItem(wxCommandEvent& event) {
 
     wxCommandEvent deleted_event(FILEVIEW_PATH_DELETED, this->GetId());
     deleted_event.SetEventObject(this);
-    deleted_event.SetString(data->full_path);
-    deleted_event.SetInt(data->is_directory ? 1 : 0);
+    deleted_event.SetString(path);
+    deleted_event.SetInt(is_directory ? 1 : 0);
     this->ProcessWindowEvent(deleted_event);
 
     this->context_item = wxTreeItemId();

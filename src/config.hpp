@@ -28,5 +28,9 @@
 #define FAILEDTO_OPENFILE "Failed to open file!"
 #define FAILEDTO_OPENFOLDER "Failed to open folder!"
 #define FAILEDTO_ALREADYEXISTS "something has the same name already"
+#define FAILEDTO_NOTEXIST_FOLDER "Folder does not exist anymore:"
+#define FAILEDTO_NOTEXIST_FILE "File does not exist anymore:"
+#define FAILEDTO_ALREADYDELETED_FOLDER "The folder changed or was deleted already."
+#define FAILEDTO_ALREADYDELETED_FILE "The file changed or was deleted already."
 
 #endif
