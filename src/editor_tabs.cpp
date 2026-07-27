@@ -4,6 +4,8 @@
 
 #include <wx/artprov.h>
 #include <wx/image.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
 
 #define AUI_NB_STYLE \
     wxAUI_NB_DEFAULT_STYLE | \
@@ -15,7 +17,12 @@ EditorTabs::EditorTabs(wxWindow* parent, wxWindowID id)
     #ifdef __WXMSW__
         this->modified_icon = wxBITMAP_PNG(modified-icon);
     #else
-        wxImage modified_icon_image("resources/modified-icon.png", wxBITMAP_TYPE_PNG );
+        wxString executable_path = wxStandardPaths::Get().GetExecutablePath();
+        wxFileName executable_file(executable_path);
+
+        wxString icon_path = executable_file.GetPath() + "/resources/modified-icon.png";
+
+        wxImage modified_icon_image(icon_path, wxBITMAP_TYPE_PNG);
         this->modified_icon = wxBitmap(modified_icon_image);
     #endif
 
@@ -74,6 +81,29 @@ void EditorTabs::OnTabSaved(wxStyledTextEvent& event) {
     }
 }
 
+void EditorTabs::PathMoved(const wxString& old_path, const wxString& new_path) {
+    wxFileName old_fn(old_path);
+    old_fn.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_TILDE | wxPATH_NORM_CASE);
+    wxString normalized_old = old_fn.GetFullPath();
+    wxString old_prefix = normalized_old + wxFileName::GetPathSeparator();
+    wxString new_prefix = new_path + wxFileName::GetPathSeparator();
+
+    for (size_t i = 0; i < this->GetPageCount(); i++) {
+        TextEditor* editor = static_cast<TextEditor*>(this->GetPage(i));
+
+        wxFileName current_fn(editor->GetFilePath());
+        current_fn.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_TILDE | wxPATH_NORM_CASE);
+        wxString current = current_fn.GetFullPath();
+
+        if (current == normalized_old) {
+            editor->UpdateFilePath(new_path);
+            this->SetPageText(i, wxFileName(new_path).GetFullName());
+        } else if (current.StartsWith(old_prefix)){
+            wxString relative = current.Mid(old_prefix.length());
+            editor->UpdateFilePath(new_prefix + relative);
+        }
+    }
+}
 
 void EditorTabs::NewFile() {
     TextEditor* text_editor = new TextEditor(this, wxID_ANY);

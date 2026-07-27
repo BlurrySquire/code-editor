@@ -45,4 +45,11 @@ show_guides = true
 
 [files]
 show_hidden = false
+
+[files.font]
+family = "Menlo"
+size = 12
+
+[files.icons]
+size = 12
 )";

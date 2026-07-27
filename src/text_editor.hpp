@@ -28,6 +28,10 @@ public:
     {
         return this->file_path;
     }
+
+    void UpdateFilePath(const wxString& new_path){
+        this->file_path = new_path;
+    }
 };
 
 #endif

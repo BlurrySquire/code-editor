@@ -1,11 +1,13 @@
 #include "file_view.hpp"
 #include "config.hpp"
+#include "settings.hpp"
 
 #include <wx/artprov.h>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/textdlg.h>
 #include <wx/file.h>
+#include <wx/fontenum.h>
 
 enum {
     ID_FILEVIEW_NEW_FILE = wxID_HIGHEST + 100,
@@ -16,17 +18,36 @@ enum {
 FileView::FileView(wxWindow* parent, wxWindowID id)
     : wxTreeCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxTR_DEFAULT_STYLE | wxTR_HIDE_ROOT) , refresh_timer(this)
 {
-    this->icon_list = new wxImageList(16, 16, true);
-    this->icon_list->Add(wxArtProvider::GetBitmap(wxART_FOLDER, wxART_OTHER, wxSize(16, 16)));
-    this->icon_list->Add(wxArtProvider::GetBitmap(wxART_NORMAL_FILE, wxART_OTHER, wxSize(16, 16)));
+    int icon_size = settings::get()["files"]["icons"]["size"].value_or(16);
+
+    this->icon_list = new wxImageList(icon_size, icon_size, true);
+    this->icon_list->Add(wxArtProvider::GetBitmap(wxART_FOLDER, wxART_OTHER, wxSize(icon_size, icon_size)));
+    this->icon_list->Add(wxArtProvider::GetBitmap(wxART_NORMAL_FILE, wxART_OTHER, wxSize(icon_size, icon_size)));
 
     this->AssignImageList(this->icon_list);
+
+    wxFont tree_font(
+        settings::get()["files"]["font"]["size"].value_or(12),
+        wxFONTFAMILY_DEFAULT,
+        wxFONTSTYLE_NORMAL,
+        wxFONTWEIGHT_NORMAL
+    );
+
+    wxString configured_face = settings::get()["files"]["font"]["family"].value_or("");
+    if (!configured_face.empty() && wxFontEnumerator::IsValidFacename(configured_face)) {
+        tree_font.SetFaceName(configured_face);
+    }
+
+    this->SetFont(tree_font);
+
     Bind(wxEVT_TREE_ITEM_ACTIVATED, &FileView::OnItemActivated, this, this->GetId());
     Bind(wxEVT_CONTEXT_MENU, &FileView::OnContextMenu, this);
     Bind(wxEVT_TIMER, &FileView::OnRefreshTimer, this, this->refresh_timer.GetId());
     Bind(wxEVT_MENU, &FileView::OnNewFile, this, ID_FILEVIEW_NEW_FILE);
     Bind(wxEVT_MENU, &FileView::OnNewFolder, this, ID_FILEVIEW_NEW_FOLDER);
     Bind(wxEVT_MENU, &FileView::OnDeleteItem, this, ID_FILEVIEW_DELETE);
+    Bind(wxEVT_TREE_BEGIN_DRAG, &FileView::OnBeginDrag, this, this->GetId());
+    Bind(wxEVT_TREE_END_DRAG, &FileView::OnEndDrag, this, this->GetId());
 
     this->refresh_timer.Start(1500);
 }
@@ -47,6 +68,7 @@ void FileView::PopulateTree(const wxString& root_path) {
 
 wxDEFINE_EVENT(FILEVIEW_FILE_ACTIVATED, wxCommandEvent);
 wxDEFINE_EVENT(FILEVIEW_PATH_DELETED, wxCommandEvent);
+wxDEFINE_EVENT(FILEVIEW_PATH_MOVED, wxCommandEvent);
 
 void FileView::AddFolderItems(const wxTreeItemId& parent_id, const wxString& path) {
     wxDir dir(path);
@@ -227,7 +249,7 @@ void FileView::OnDeleteItem(wxCommandEvent& event) {
         }
     }
 
-    wxString item_type = is_directory ? FOLDER : FILE;
+    wxString item_type = is_directory ? LABEL_FOLDER : LABEL_FILE;
 
 
     wxMessageDialog confirm_dialog(
@@ -269,7 +291,98 @@ void FileView::OnDeleteItem(wxCommandEvent& event) {
     this->RefreshTree();
 }
 
+bool FileView::IsDescendantPath(const wxString& parent_path, const wxString& candidate_path) {
+    wxString prefix = parent_path + wxFileName::GetPathSeparator();
+    return candidate_path == parent_path || candidate_path.StartsWith(prefix);
+}
+
+void FileView::OnBeginDrag(wxTreeEvent& event) {
+    wxTreeItemId item = event.GetItem();
+    FileViewItemData* data = static_cast<FileViewItemData*> (this->GetItemData(item));
+
+    if (data == nullptr) {
+        event.Veto();
+        return;
+    }
+
+    this->drag_item = item;
+    event.Allow();
+}
+
+void FileView::OnEndDrag(wxTreeEvent& event) {
+    wxTreeItemId target_item = event.GetItem();
+
+    if (!this->drag_item.IsOk()) {
+        event.Skip();
+        return;
+    }
+
+    FileViewItemData* source_data = static_cast<FileViewItemData*> (this->GetItemData(this->drag_item));
+
+    if (source_data == nullptr) {
+        this->drag_item = wxTreeItemId();
+
+        return;
+    }
+
+    wxString target_dir;
+    wxString source_path = source_data->full_path;
+
+    bool source_is_dir = source_data->is_directory;
+
+    if (target_item.IsOk()) {
+        FileViewItemData* target_data = static_cast<FileViewItemData*> (this->GetItemData(target_item));
+
+        if (target_data != nullptr){
+            target_dir =
+                target_data->is_directory ?
+                target_data->full_path : wxFileName(target_data->full_path).GetPath()
+            ;
+        } else
+        {
+            target_dir = this->root_path;
+        }
+    } else {
+        target_dir = this->root_path;
+    }
+
+    this->drag_item = wxTreeItemId();
+
+    if (target_dir.empty()) return;
+
+    if (source_is_dir && this->IsDescendantPath(source_path, target_dir)) {
+        wxMessageBox(FAILEDTO_MOVING_INTO_ITSELF_FOLDER, "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+
+    wxString filename = wxFileName(source_path).GetFullName();
+    wxString new_path = target_dir + wxFileName::GetPathSeparator() + filename;
+
+    if (wxFileExists(new_path) || wxDirExists(new_path)) {
+        wxMessageBox(FAILEDTO_ALREADYEXISTS, "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+
+    if (!wxRenameFile(source_path, new_path, false)){
+        wxMessageBox("didnt work", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+
+    if (new_path == source_path) return;
+
+    this->context_item = wxTreeItemId();
+    this->CallAfter([this, source_path, new_path]() {
+        wxCommandEvent moved_event(FILEVIEW_PATH_MOVED, this->GetId());
+        moved_event.SetEventObject(this);
+        moved_event.SetString(source_path);
+        moved_event.SetClientData(new wxString(new_path));
+        this->ProcessWindowEvent(moved_event);
+        this->RefreshTree();
+    });
+}
+
 void FileView::OnRefreshTimer(wxTimerEvent& event) {
+    if (this->drag_item.IsOk()) return;
     this->RefreshTree();
 }
 

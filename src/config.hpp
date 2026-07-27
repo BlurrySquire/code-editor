@@ -1,8 +1,8 @@
 #ifndef CONFIG_FILE
 #define CONFIG_FILE 1
 
-#define FILE "file"
-#define FOLDER "folder"
+#define LABEL_FILE "file"
+#define LABEL_FOLDER "folder"
 
 #define NEWFILE "New File"
 #define NEWFOLDER "New Folder"
@@ -32,5 +32,6 @@
 #define FAILEDTO_NOTEXIST_FILE "File does not exist anymore:"
 #define FAILEDTO_ALREADYDELETED_FOLDER "The folder changed or was deleted already."
 #define FAILEDTO_ALREADYDELETED_FILE "The file changed or was deleted already."
+#define FAILEDTO_MOVING_INTO_ITSELF_FOLDER "you cant move a folder into itself"
 
 #endif
