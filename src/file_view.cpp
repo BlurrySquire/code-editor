@@ -370,17 +370,19 @@ void FileView::OnEndDrag(wxTreeEvent& event) {
 
     if (new_path == source_path) return;
 
-    wxCommandEvent moved_event(FILEVIEW_PATH_MOVED, this->GetId());
-    moved_event.SetEventObject(this);
-    moved_event.SetString(source_path);
-    moved_event.SetClientData(new wxString(new_path) );
-    this->ProcessWindowEvent(moved_event);
-
     this->context_item = wxTreeItemId();
-    this->RefreshTree();
+    this->CallAfter([this, source_path, new_path]() {
+        wxCommandEvent moved_event(FILEVIEW_PATH_MOVED, this->GetId());
+        moved_event.SetEventObject(this);
+        moved_event.SetString(source_path);
+        moved_event.SetClientData(new wxString(new_path));
+        this->ProcessWindowEvent(moved_event);
+        this->RefreshTree();
+    });
 }
 
 void FileView::OnRefreshTimer(wxTimerEvent& event) {
+    if (this->drag_item.IsOk()) return;
     this->RefreshTree();
 }
 
