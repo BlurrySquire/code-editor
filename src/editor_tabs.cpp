@@ -82,15 +82,20 @@ void EditorTabs::OnTabSaved(wxStyledTextEvent& event) {
 }
 
 void EditorTabs::PathMoved(const wxString& old_path, const wxString& new_path) {
-    wxString old_prefix = old_path + wxFileName::GetPathSeparator();
+    wxFileName old_fn(old_path);
+    old_fn.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_TILDE | wxPATH_NORM_CASE);
+    wxString normalized_old = old_fn.GetFullPath();
+    wxString old_prefix = normalized_old + wxFileName::GetPathSeparator();
     wxString new_prefix = new_path + wxFileName::GetPathSeparator();
 
     for (size_t i = 0; i < this->GetPageCount(); i++) {
         TextEditor* editor = static_cast<TextEditor*>(this->GetPage(i));
 
-        wxString current = editor->GetFilePath();
+        wxFileName current_fn(editor->GetFilePath());
+        current_fn.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_TILDE | wxPATH_NORM_CASE);
+        wxString current = current_fn.GetFullPath();
 
-        if (current == old_path) {
+        if (current == normalized_old) {
             editor->UpdateFilePath(new_path);
             this->SetPageText(i, wxFileName(new_path).GetFullName());
         } else if (current.StartsWith(old_prefix)){
